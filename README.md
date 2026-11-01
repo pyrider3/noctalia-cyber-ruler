@@ -4,6 +4,16 @@ A transparent, animated workspace and window navigator for **Niri + Noctalia**.
 
 为 Niri 横向状态栏设计的 Noctalia 插件：四种可切换主题，用图形显示工作区、窗口列、堆叠与悬浮窗口。
 
+## 16 秒演示
+
+[![Cyber Ruler 动态演示](docs/demo.gif)](docs/demo.mp4)
+
+[观看 / 下载高清视频](https://github.com/pyrider3/noctalia-cyber-ruler/raw/refs/heads/main/docs/demo.mp4) · [视频封面](docs/demo-cover.png) · [四主题分享图](docs/themes-social.png)
+
+演示包含焦点跟随、窗口间距自适应、工作区圆点增减、悬浮窗口标记和四主题展示。所有画面由实际插件渲染器生成，使用演示数据。
+
+## 主题预览
+
 ![主题预览，使用演示数据](docs/themes.png)
 
 > 预览由实际渲染器生成，使用虚构窗口数据，不包含桌面截图。版本 **1.4.5**，MIT License。
