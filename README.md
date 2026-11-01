@@ -6,7 +6,7 @@ A transparent, animated workspace and window navigator for **Niri + Noctalia**.
 
 ![主题预览，使用演示数据](docs/themes.png)
 
-> 预览由实际渲染器生成，使用虚构窗口数据，不包含桌面截图。版本 **1.4.4**，MIT License。
+> 预览由实际渲染器生成，使用虚构窗口数据，不包含桌面截图。版本 **1.4.5**，MIT License。
 
 ## 四种主题
 
@@ -103,6 +103,10 @@ noctalia msg config-reload
 
 运行时不联网，不捕获窗口内容，不持久化窗口标题。私有状态目录保存心跳、交互状态和当前工作区 / 窗口 ID、应用标签；移除组件后伴随进程自动退出。静止时不持续生成帧，动画期间最高 60 fps，Niri 断线后自动重连。
 
+## 动画衔接修复（1.4.5）
+
+连续反向切换保留瞬时速度；工作区删除后的圆点补位与中央定位使用一致曲线；延迟到达的焦点事件从当前画面继续变形。帧调度按 60 Hz 截止时间唤醒，动画收尾保证输出最终帧。
+
 ## 验证
 
 ```sh
@@ -111,4 +115,4 @@ noctalia plugins lint .
 python3 tools/render_preview.py
 ```
 
-当前包含 38 项测试，覆盖多显示器模型、列与堆叠、稳定 ID 点击、动画衔接、工作区渐隐 / 补位、悬浮窗口、四主题渲染以及共享内存像素协议。CI 运行 Python 测试；Noctalia lint 需本机安装 Noctalia。
+当前包含 44 项测试，覆盖多显示器模型、列与堆叠、稳定 ID 点击、动画衔接、工作区渐隐 / 补位、悬浮窗口、四主题渲染以及共享内存像素协议。CI 运行 Python 测试；Noctalia lint 需本机安装 Noctalia。

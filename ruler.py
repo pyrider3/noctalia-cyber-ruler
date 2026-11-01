@@ -263,6 +263,16 @@ class Ruler:
         return surface
 
 
+def animation_frame_due(moving, was_moving, now, last_paint):
+    """Always publish the settled frame, even if the last 60 Hz slot was missed."""
+    return (moving and now-last_paint+1e-9>=1/60) or (was_moving and not moving)
+
+
+def frame_wait(moving, now, last_paint):
+    # Wake at the next frame deadline rather than quantizing 16.7 ms to 8 ms polls.
+    return max(.001,1/60-(now-last_paint)) if moving else .035
+
+
 def serve(state, output):
     state.mkdir(parents=True, exist_ok=True, mode=0o700)
     lock=open(state/'companion.lock','w')
@@ -270,7 +280,7 @@ def serve(state, output):
     except BlockingIOError:return
     path=state/'canvas.sock';path.unlink(missing_ok=True)
     listener=socket.socket(socket.AF_UNIX,socket.SOCK_SEQPACKET);listener.bind(str(path));os.chmod(path,0o600);listener.listen(8)
-    model=Model();ruler=Ruler();clients={};frame=None;generation=0;frame_width=300;frame_height=HEIGHT;last_status=0;last_input=0;last_paint=0;last_sig=None;serial=None;config={};began=time.time();source_mtime=Path(__file__).stat().st_mtime_ns
+    model=Model();ruler=Ruler();clients={};frame=None;generation=0;frame_width=300;frame_height=HEIGHT;last_status=0;last_input=0;last_paint=0;last_sig=None;serial=None;config={};began=time.time();source_mtime=Path(__file__).stat().st_mtime_ns;was_moving=False
     def close(conn):
         v=clients.pop(conn);conn.close();v['pixels'].close();os.close(v['fd'])
     try:
@@ -312,10 +322,11 @@ def serve(state, output):
             moving=ruler.animate and (ruler.collection.moving(now) if ruler.theme in ("islands", "filmstrip") else ruler.heading.moving(now) if ruler.theme == "aviation" else (now-ruler.started<ruler.duration+.28 or (ruler.show_windows and ruler.window_axis.moving(now))))
             sig=(repr(ruler.workspaces),repr(config),model.connected)
             # No frame churn at rest. Pixel-stream demand is acknowledged only for new frames.
-            if clients and ((moving and now-last_paint>=1/60) or sig!=last_sig or frame is None):
+            if clients and (animation_frame_due(moving,was_moving,now,last_paint) or sig!=last_sig or frame is None):
                 surf=ruler.paint(now);frame=pixel_bytes(surf,straight_alpha=ruler.theme != "classic")
                 generation+=1;frame_width=ruler.width;frame_height=ruler.height;last_paint=now;last_sig=sig
-            ready,_,_=select.select([listener]+list(clients),[],[],.008 if moving else .035)
+            was_moving=moving
+            ready,_,_=select.select([listener]+list(clients),[],[],frame_wait(moving,time.monotonic(),last_paint))
             for conn in ready:
                 if conn is listener:
                     peer,_=listener.accept();peer.setblocking(False);fd=os.memfd_create('cyber-ruler',os.MFD_ALLOW_SEALING)

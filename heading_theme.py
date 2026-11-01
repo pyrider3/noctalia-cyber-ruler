@@ -15,6 +15,7 @@ class Motion:
         p = max(0., min(1., (now-self.started)/self.duration))
         return self.start+(self.target-self.start)*(1-(1-p)**3)
     def move(self, target, now, duration, animate=True, reset=False):
+        if self.ready and not reset and animate and target==self.target:return
         current = self.at(now)  # evaluate using the previous duration
         self.duration = duration
         if reset or not self.ready or not animate:
@@ -40,8 +41,14 @@ class KineticMotion(Motion):
         if target==self.target:return
         current=self.at(now);velocity=self.velocity(now);distance=target-current
         self.duration=duration*min(1.65,max(.8,abs(distance)**.25))
-        # Bound inherited speed to prevent a long overshoot beyond the visible tape.
-        self.initial_velocity=max(0.,min(abs(velocity),3*abs(distance)/self.duration))*(1 if distance>0 else -1) if velocity*distance>0 else 0.
+        # Preserve signed velocity, including reversals. Shorten the braking
+        # interval instead of abruptly clipping velocity at the event boundary.
+        if velocity*distance>0 and velocity:
+            self.duration=min(self.duration,3*abs(distance)/abs(velocity))
+        elif velocity:
+            self.duration=min(self.duration,.12)
+        self.duration=max(.001,self.duration)
+        self.initial_velocity=velocity
         self.start=current;self.target=float(target);self.started=now
 
 class HeadingTheme:
@@ -72,7 +79,7 @@ class HeadingTheme:
         for i,ws in enumerate(ruler.workspaces):
             if ws['id'] not in self.workspace_dots:
                 opacity=Motion();opacity.move(0. if self.dots_ready and ruler.animate else 1.,now,ruler.duration,False)
-                self.workspace_dots[ws['id']]={'index':Motion(),'opacity':opacity,'urgent':False}
+                self.workspace_dots[ws['id']]={'index':KineticMotion(),'opacity':opacity,'urgent':False}
             state=self.workspace_dots[ws['id']]
             state['index'].move(i,now,ruler.duration,ruler.animate)
             state['opacity'].move(1.,now,ruler.duration,ruler.animate)
@@ -90,6 +97,12 @@ class HeadingTheme:
             self.tiled_focus[ruler.active_id]=self.tiled_indices.index(axis.column)
         tiled_column=min(self.tiled_focus.get(ruler.active_id,0),max(0,self.window_count-1))
         target_spacing=min(WINDOW_SPACING,max(1.,ruler.width*VISIBLE_RADIUS)/max(self.window_count-1,1))
+        if (self.previous_ticks is not None and self.transition_started!=now
+                and (self.window.target!=tiled_column or self.spacing.target!=target_spacing)):
+            # Niri may deliver workspace activation before its focused-window update.
+            # Rebase from the displayed geometry instead of moving the morph endpoint.
+            self.previous_ticks=list(self.last_ticks)
+            self.transition_started=now
         self.spacing.move(target_spacing,now,ruler.duration,ruler.animate)
         self.spacing_width=ruler.width
         self.window.move(tiled_column,now,ruler.duration,ruler.animate)

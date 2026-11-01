@@ -1,6 +1,6 @@
 id = "local/cyber-ruler"
 name = "Cyber Ruler · 赛博刻度尺"
-version = "1.4.4"
+version = "1.4.5"
 plugin_api = 43
 author = "local"
 license = "MIT"
