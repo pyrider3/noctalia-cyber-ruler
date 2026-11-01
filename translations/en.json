@@ -1,0 +1,14 @@
+{
+  "settings.width": "Ruler width",
+  "settings.accent": "Cursor color",
+  "settings.animate": "Animate workspace changes",
+  "settings.show_app": "Show current application",
+  "settings.duration": "Transition duration (ms)",
+  "settings.show_windows": "Show window ruler for current workspace",
+  "settings.theme": "Visual theme",
+  "settings.theme_classic": "Classic Cyber (original)",
+  "settings.theme_aviation": "Aviation HUD (transparent fade)",
+  "settings.size_percent": "Overall size (%)",
+  "settings.theme_islands": "Window Islands",
+  "settings.theme_filmstrip": "Desktop Filmstrip"
+}

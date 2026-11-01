@@ -1,0 +1,14 @@
+{
+  "settings.width": "刻度尺宽度",
+  "settings.accent": "游标颜色",
+  "settings.animate": "切换扫光动画",
+  "settings.show_app": "显示当前应用名",
+  "settings.duration": "切换动画时长（毫秒）",
+  "settings.show_windows": "显示当前工作区窗口尺",
+  "settings.theme": "外观主题",
+  "settings.theme_classic": "经典赛博（保留原版）",
+  "settings.theme_aviation": "飞行仪表（透明渐隐）",
+  "settings.size_percent": "整体放大比例（%）",
+  "settings.theme_islands": "窗口群岛",
+  "settings.theme_filmstrip": "桌面底片"
+}
