@@ -15,6 +15,8 @@ local function configure()
     input.width = math.clamp(tonumber(noctalia.getConfig("width")) or 300, 180, 520)
     input.theme = noctalia.getConfig("theme") or "classic"
     visualScale = input.theme ~= "classic" and math.clamp(tonumber(noctalia.getConfig("size_percent")) or 100, 80, 160) / 100 or 1
+    input.dot_size_percent = math.clamp(tonumber(noctalia.getConfig("dot_size_percent")) or 100, 50, 200)
+    input.tick_width_percent = math.clamp(tonumber(noctalia.getConfig("tick_width_percent")) or 125, 50, 250)
     input.accent = noctalia.getConfig("accent") or "#63f5e3"
     input.show_windows = noctalia.getConfig("show_windows") ~= false
     input.animate = noctalia.getConfig("animate") ~= false

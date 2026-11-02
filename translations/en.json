@@ -10,5 +10,7 @@
   "settings.theme_aviation": "Aviation HUD (transparent fade)",
   "settings.size_percent": "Overall size (%)",
   "settings.theme_islands": "Window Islands",
-  "settings.theme_filmstrip": "Desktop Filmstrip"
+  "settings.theme_filmstrip": "Desktop Filmstrip",
+  "settings.tick_width_percent": "Tick thickness (%)",
+  "settings.dot_size_percent": "Workspace dot size (%)"
 }

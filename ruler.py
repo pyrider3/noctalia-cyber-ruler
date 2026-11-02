@@ -156,6 +156,8 @@ from heading_theme import HeadingTheme
 
 class Ruler:
     def __init__(self):
+        self.dot_size_scale = 1.0
+        self.tick_width_scale = 1.25
         self.width = 300; self.accent = '#63f5e3'; self.animate = True; self.show_app = True; self.duration = .32
         self.cursor = None; self.start = 0.; self.target = 0.; self.started = -10.; self.active_id = None
         self.workspaces = []; self.hover = -1; self.hover_y = 0; self.connected = True
@@ -168,6 +170,8 @@ class Ruler:
         self.width = max(180, min(MAX_WIDTH, int(config.get('width', 300))))
         self.accent = config.get('accent', '#63f5e3'); self.animate = config.get('animate', True)
         self.show_app = config.get('show_app', True); self.duration = max(.12, min(.8, config.get('duration', 320)/1000))
+        self.dot_size_scale = max(50, min(200, float(config.get("dot_size_percent", 100)))) / 100
+        self.tick_width_scale = max(50, min(250, float(config.get('tick_width_percent', 125)))) / 100
         self.hover = config.get('hover', -1); self.hover_y = config.get('hover_y', 0)
         self.show_windows = config.get('show_windows', True)
         self.theme = config.get("theme", "classic")

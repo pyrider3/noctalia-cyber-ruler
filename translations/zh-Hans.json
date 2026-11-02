@@ -10,5 +10,7 @@
   "settings.theme_aviation": "飞行仪表（透明渐隐）",
   "settings.size_percent": "整体放大比例（%）",
   "settings.theme_islands": "窗口群岛",
-  "settings.theme_filmstrip": "桌面底片"
+  "settings.theme_filmstrip": "桌面底片",
+  "settings.tick_width_percent": "刻度粗细（%）",
+  "settings.dot_size_percent": "圆点大小（%）"
 }

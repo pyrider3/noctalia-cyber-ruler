@@ -79,7 +79,8 @@ class HeadingTheme:
         for i,ws in enumerate(ruler.workspaces):
             if ws['id'] not in self.workspace_dots:
                 opacity=Motion();opacity.move(0. if self.dots_ready and ruler.animate else 1.,now,ruler.duration,False)
-                self.workspace_dots[ws['id']]={'index':KineticMotion(),'opacity':opacity,'urgent':False}
+                hover=Motion();hover.move(0.,now,.16,False)
+                self.workspace_dots[ws['id']]={'index':KineticMotion(),'opacity':opacity,'hover':hover,'urgent':False}
             state=self.workspace_dots[ws['id']]
             state['index'].move(i,now,ruler.duration,ruler.animate)
             state['opacity'].move(1.,now,ruler.duration,ruler.animate)
@@ -109,7 +110,7 @@ class HeadingTheme:
         if self.previous_ticks is not None:
             self.transition_duration=ruler.duration
         self.workspace_id=ruler.active_id
-    def moving(self,now):return any(s[k].moving(now) for s in self.workspace_dots.values() for k in ("index","opacity")) or self.workspace_spacing.moving(now) or any(m.moving(now) for m in self.hover_states.values()) or self.workspace.moving(now) or self.window.moving(now) or self.spacing.moving(now) or (self.previous_ticks is not None and now-self.transition_started<self.transition_duration)
+    def moving(self,now):return any(s[k].moving(now) for s in self.workspace_dots.values() for k in ("index","opacity","hover")) or self.workspace_spacing.moving(now) or any(m.moving(now) for m in self.hover_states.values()) or self.workspace.moving(now) or self.window.moving(now) or self.spacing.moving(now) or (self.previous_ticks is not None and now-self.transition_started<self.transition_duration)
     def morph_ticks(self, target, now, duration, animate=True):
         if self.previous_ticks is None:return target
         p=max(0.,min(1.,(now-self.transition_started)/duration))
@@ -202,16 +203,24 @@ class HeadingTheme:
             c.set_font_size(size);ext=c.text_extents(value);left=x-ext.width/2-ext.x_bearing
             c.set_source_rgba(0,0,0,a*.5);c.move_to(left,y+.5);c.show_text(value)
             ink(rgb,a);c.move_to(left,y);c.show_text(value)
-        def dot(x,y,r,a):
+        def dot(x,y,r,a,rgb=white):
             c.set_source_rgba(0,0,0,a*.35);c.arc(x,y+.4,r+.5,0,math.tau);c.fill()
-            ink(white,a);c.arc(x,y,r,0,math.tau);c.fill()
+            ink(rgb,a);c.arc(x,y,r,0,math.tau);c.fill()
         if not ruler.workspaces:
             text('NIRI',width/2,height/2+3,8,gray,.55)
             return surface
         center=width/2
         # Workspace dots are actual workspaces; no fictitious clickable slots are added.
         dot_y=9 if ruler.show_windows else 15
-        for state in self.workspace_dots.values():
+        hover_id=None
+        if ruler.hover>=0 and (not ruler.show_windows or ruler.hover_y<13/42) and self.workspace_ids:
+            index=self.hit(ruler.hover,len(self.workspace_ids),width,now)
+            x=self.point(index,width,now)
+            if abs(x-ruler.hover*width)<=max(5.,min(10.,self.workspace_spacing.at(now)*.45)):
+                hover_id=self.workspace_ids[index]
+        for wid,state in self.workspace_dots.items():
+            state['hover'].move(1. if wid==hover_id else 0.,now,.16,ruler.animate)
+            lift=state['hover'].at(now)
             x=center+(state['index'].at(now)-self.workspace.at(now))*self.workspace_spacing.at(now)
             a=self.fade(x,width)*state['opacity'].at(now)
             if a<=.001:continue
@@ -221,8 +230,10 @@ class HeadingTheme:
             inner=min(2.8,dot_spacing*.18);outer=min(6.,dot_spacing*.45)
             a *= max(0.,min(1.,(abs(x-center)-inner)/max(.1,outer-inner)))
             if state['urgent']:
-                ink((1.,.55,.36),a);c.arc(x,dot_y,min(2.2,dot_spacing*.36),0,math.tau);c.fill()
-            else:dot(x,dot_y,min(2.0,dot_spacing*.34),a*.68)
+                ink((1.,.55,.36),a);c.arc(x,dot_y,min(2.2*ruler.dot_size_scale*(1+.35*lift),dot_spacing*.44),0,math.tau);c.fill()
+            else:
+                tint=tuple(v+(h-v)*lift*.35 for v,h in zip(white,blue))
+                dot(x,dot_y,min(2.0*ruler.dot_size_scale*(1+.35*lift),dot_spacing*.44),a*(.68+.32*lift),tint)
         # One shared marker, aligned with the workspace dot row and the window tape center.
         ink(blue,.96)
         # Rounded corners keep the index crisp while echoing the bar's softer icons.
@@ -313,9 +324,9 @@ class HeadingTheme:
             reach=4.5+min(8.,abs(speed)*.025) if delta*speed<0 else 4.5
             hot=max(0.,1-abs(delta)/reach)**1.3
             tint=tuple(v+(h-v)*hot for v,h in zip(rgb,blue))
-            line(x,top,x,bottom,tint,alpha+(1-alpha)*hot,weight)
+            line(x,top,x,bottom,tint,alpha+(1-alpha)*hot,weight*ruler.tick_width_scale)
         self.floating_ticks=floating_ticks
         for x,top,bottom,rgb,alpha,weight in floating_ticks:
-            line(x,top,x,bottom,rgb,alpha,weight)
+            line(x,top,x,bottom,rgb,alpha,weight*ruler.tick_width_scale)
         self.last_ticks=ticks
         return surface

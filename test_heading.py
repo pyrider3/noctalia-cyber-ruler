@@ -65,6 +65,47 @@ class HeadingTests(unittest.TestCase):
         r.set_workspaces([ws[0]],3)
         self.assertNotIn(3,r.heading.workspace_dots)
 
+    def test_tick_thickness_setting_changes_strokes_without_moving_ticks(self):
+        r=AdaptiveHeadingTests().make(3,1)
+        def sample(percent):
+            r.configure(dict(theme='aviation',tick_width_percent=percent))
+            r.set_workspaces(r.workspaces,0)
+            raw=pixel_bytes(r.paint(0),True);stride=r.width*2*4
+            return sum(sum(raw[y*stride+3:(y+1)*stride:4]) for y in range(36,52))
+        original=[r.heading.point(i,r.width,0,True) for i in range(3)]
+        self.assertGreater(sample(200),sample(100))
+        self.assertEqual([r.heading.point(i,r.width,0,True) for i in range(3)],original)
+        r.configure(dict(tick_width_percent=0));self.assertEqual(r.tick_width_scale,.5)
+        r.configure(dict(tick_width_percent=999));self.assertEqual(r.tick_width_scale,2.5)
+
+    def test_workspace_dot_hover_is_local_and_smoothly_restores(self):
+        r=Ruler();r.configure(dict(theme='aviation'))
+        ws=[dict(id=i,idx=i,is_active=i==1,columns=[]) for i in [1,2,3]]
+        r.set_workspaces(ws,0);base=bytes(r.paint(0).get_data())
+        r.hover=r.heading.point(1,r.width,0)/r.width;r.hover_y=9/r.height
+        r.paint(1)
+        self.assertEqual(r.heading.workspace_dots[2]['hover'].at(1),0)
+        r.paint(1.1)
+        self.assertGreater(r.heading.workspace_dots[2]['hover'].at(1.1),0)
+        self.assertEqual(r.heading.workspace_dots[3]['hover'].at(1.1),0)
+        self.assertTrue(r.heading.moving(1.1))
+        self.assertNotEqual(bytes(r.paint(1.2).get_data()),base)
+        r.hover_y=.7;r.paint(2)
+        self.assertGreater(r.heading.workspace_dots[2]['hover'].at(2),0)
+        self.assertEqual(bytes(r.paint(2.3).get_data()),base)
+
+    def test_workspace_dot_size_setting_and_dense_spacing_cap(self):
+        r=Ruler();ws=[dict(id=i,idx=i,is_active=i==1,columns=[]) for i in [1,2,3]]
+        def upper_alpha(size):
+            r.configure(dict(theme='aviation',dot_size_percent=size))
+            r.set_workspaces(ws,0)
+            raw=pixel_bytes(r.paint(0),True);stride=r.width*2*4
+            return sum(raw[3:26*stride:4])
+        self.assertGreater(upper_alpha(150),upper_alpha(100))
+        self.assertGreater(upper_alpha(100),upper_alpha(50))
+        r.configure(dict(dot_size_percent=0));self.assertEqual(r.dot_size_scale,.5)
+        r.configure(dict(dot_size_percent=999));self.assertEqual(r.dot_size_scale,2)
+
     def test_gradual_symmetric_fade(self):
         self.assertEqual(HeadingTheme.fade(150,300),1)
         values=[HeadingTheme.fade(150+d,300) for d in [0,25,50,90,125,144,150]]

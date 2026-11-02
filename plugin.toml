@@ -1,6 +1,6 @@
 id = "local/cyber-ruler"
 name = "Cyber Ruler · 赛博刻度尺"
-version = "1.4.5"
+version = "1.4.6"
 plugin_api = 43
 author = "local"
 license = "MIT"
@@ -78,3 +78,21 @@ default = 100
 min = 80
 max = 160
 visible_when = { key = "theme", values = ["aviation", "islands", "filmstrip"] }
+
+[[setting]]
+key = "tick_width_percent"
+type = "int"
+label_key = "settings.tick_width_percent"
+default = 125
+min = 50
+max = 250
+visible_when = { key = "theme", values = ["aviation"] }
+
+[[setting]]
+key = "dot_size_percent"
+type = "int"
+label_key = "settings.dot_size_percent"
+default = 100
+min = 50
+max = 200
+visible_when = { key = "theme", values = ["aviation"] }
